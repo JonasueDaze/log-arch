@@ -1,0 +1,10 @@
+filebeat.inputs:
+  - type: log
+    enabled: true
+    paths:
+      - "/var/log/app/*.log"
+    fields_under_root: true
+
+output.redis:
+  hosts: ["redis"]
+  index: "app-dev"
