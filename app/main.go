@@ -6,17 +6,21 @@ import (
 	"strconv"
 	"time"
 
+	"github.com/dchest/uniuri"
+	"github.com/google/uuid"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
 )
 
-type event struct {
-	Type string      `json:"type"`
-	Time time.Time   `json:"time"`
-	Data interface{} `json:"data"`
-}
+const (
+	maxRandomNumber     = 100
+	maxRandomInProgress = 10
+	maxRandomEventTimer = 10
+)
 
 func main() {
+	rand.Seed(time.Now().UnixNano())
+
 	args := os.Args[1:]
 	interval, err := strconv.Atoi(args[0])
 	if err != nil {
@@ -30,17 +34,45 @@ func main() {
 
 	// Generating logs indefinitely.
 	for range time.Tick(time.Duration(interval) * time.Second) {
-		ascii := rand.Intn(26)
-		e := event{
-			Type: string(ascii + 97), // Event type generated ranges from "a" to "z"
+		go generateLog(l)
+	}
+}
+
+func generateLog(l *zap.Logger) {
+	id := uuid.New().String()
+
+	e := event{
+		Type: "event_started",
+		Time: time.Now().UTC(),
+		Data: eventStartedData{
+			ID:      id,
+			Message: uniuri.New(),
+		},
+	}
+	l.Info("event started", zap.Any("event", e))
+	time.Sleep(time.Duration(rand.Intn(maxRandomEventTimer)+1) * time.Second)
+
+	numInProgress := rand.Intn(maxRandomInProgress) + 1
+	for i := 0; i < numInProgress; i++ {
+		e = event{
+			Type: "event_in_progress",
 			Time: time.Now().UTC(),
-			Data: map[string]interface{}{
-				"id":        (ascii % 10) + 1, // Maximum of 10 different entity IDs.
-				"uppercase": string(ascii + 65),
-				"random":    rand.Intn(100) + 1,
+			Data: eventInProgressData{
+				ID:     id,
+				Random: rand.Intn(maxRandomNumber) + 1,
 			},
 		}
-
-		l.Info("test message", zap.Any("event", e))
+		l.Info("event in progress", zap.Any("event", e))
+		time.Sleep(time.Duration(rand.Intn(maxRandomEventTimer)+1) * time.Second)
 	}
+
+	e = event{
+		Type: "event_finished",
+		Time: time.Now().UTC(),
+		Data: eventFinishedData{
+			ID:      id,
+			Message: uniuri.New(),
+		},
+	}
+	l.Info("event finished", zap.Any("event", e))
 }

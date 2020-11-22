@@ -3,12 +3,13 @@
 SHELL:=/bin/bash
 PROJECT=log-arch
 INTERVAL=5
+SERVICE=
 
 all: setup up run
 
 run:
 	cd app && \
-		go build -o $(PROJECT) main.go && \
+		go build -o $(PROJECT) main.go models.go && \
 		./$(PROJECT) $(INTERVAL) >> logs/app.log 2>&1
 
 setup:
@@ -17,10 +18,13 @@ setup:
 	sudo chown -R 1000:1000 infra/data/elasticsearch
 
 up:
-	docker-compose -p $(PROJECT) -f infra/docker-compose.yml up -d
+	docker-compose -p $(PROJECT) -f infra/docker-compose.yml up -d $(SERVICE)
 
 down:
 	docker-compose -p $(PROJECT) -f infra/docker-compose.yml down --remove-orphans
+
+rm:
+	docker-compose -p $(PROJECT) -f infra/docker-compose.yml rm -fs $(SERVICE)
 
 logs:
 	docker-compose -p $(PROJECT) -f infra/docker-compose.yml logs -t -f
