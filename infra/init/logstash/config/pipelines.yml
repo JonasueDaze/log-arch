@@ -2,3 +2,5 @@
   path.config: "/usr/share/logstash/pipeline/app-logstash.conf"
 - pipeline.id: app-entity
   path.config: "/usr/share/logstash/pipeline/app-entity-logstash.conf"
+- pipeline.id: app-treat-entity
+  path.config: "/usr/share/logstash/pipeline/app-treat-entity-logstash.conf"

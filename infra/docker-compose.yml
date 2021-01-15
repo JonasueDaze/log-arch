@@ -39,6 +39,7 @@ services:
       - ./data/logstash:/usr/share/logstash/data
       - ./init/logstash/config:/usr/share/logstash/config:ro
       - ./init/logstash/pipeline:/usr/share/logstash/pipeline:ro
+      - ./init/logstash/scripts:/usr/share/logstash/scripts:ro
     environment:
       LS_JAVA_OPTS: "-Xmx256m -Xms256m"
     restart: always
